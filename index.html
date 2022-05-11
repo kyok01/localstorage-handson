@@ -17,15 +17,16 @@
       <ul>
         <li id="save">Save</li>
         <li id="clear">Clear</li>
-        <li id="edit">Edit</li>
-        <li id="delete">Delete</li>
+        <!-- <li id="edit">Edit</li>
+        <li id="delete">Delete</li> -->
       </ul>
     </main>
-    <table id="list">
-      <!-- ここに追加データが挿入される -->
+    <table>
+      <thead><tr><th>id</th><th>メモタイトル</th><th>メモ内容</th></tr></thead>
+      <tbody id="list">      <!-- ここに追加データが挿入される --></tbody>
     </table>
     <script>
-      // 基本的な思想は、keyは登録したメモの順番、valueはメモのタイトルと中身の連想配列であるということ
+      // 基本的な思想は、keyは登録したメモの順番、valueはメモのタイトルと中身の連想配列であるもの
       // グローバル変数
       let idNum; //最後に作成したメモの順番を記録するための変数。0から始まる
       // class Memoを用いて、メモを管理しやすくする
@@ -36,18 +37,10 @@
         }
       }
 
-      // classのデバッグ
-
-      let memo = new Memo("aaa", "bbb");
-      console.log(memo);
-      arr = [1, memo];
-      console.log(arr);
-      console.log(arr[1].title);
-
       // 読み込み段階でidNumを更新する
       idNum = localStorage.getItem("id");
-      if(!idNum){
-        idNum = 0; 
+      if (!idNum) {
+        idNum = 0;
         localStorage.setItem("id", 0);
         // 初めてのメモならば、idNumを0でセットしておく
       }
@@ -65,7 +58,14 @@
         const memo = new Memo($("#memoTitle").val(), $("#memoContents").val());
         console.log(memo); // debug
         localStorage.setItem(key, JSON.stringify(memo));
-        const html = "<tr><td>" + memo.title + "</td><td>" + memo.contents + "</td></tr>";
+        const html =
+          "<tr><td>" +
+          idNum +
+          "</td><td>" +
+          memo.title +
+          "</td><td>" +
+          memo.contents +
+          "</td></td>";
         $("#list").append(html);
         // 入力個所を空にする
         $("#memoTitle").val("");
@@ -83,66 +83,112 @@
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         const memo = JSON.parse(localStorage.getItem(key));
-        if($.isPlainObject(memo)){ 
-        const keyAndMemo = {"id":key, "memo":memo};
-        console.log(memo);
-        console.log(keyAndMemo);
-        memos.push(keyAndMemo);
-        console.log(memos);
-        }
-        //一覧表示
-        if($.isPlainObject(memo)){ //連想配列かどうかを判別(keyが"id"のものを取り除く)
-          const html = "<tr><td>" + memo.title + "</td><td>" + memo.contents + "</td></tr>";
-        $("#list").append(html);
+        //連想配列かどうかを判別(localstorage内でメモでないものを取り除く)
+        if ($.isPlainObject(memo)) {
+          const keyAndMemo = { id: key, memo: memo };
+          console.log(memo);
+          console.log(keyAndMemo);
+          memos.push(keyAndMemo);
+          console.log(memos);
         }
       }
+      // memos内の要素をid順に並び替える
+      if (memos.length >= 3) {
+        quickSortArrayIncludedHash(0, memos.length - 1, memos);
+      }
+      if (memos.length == 2) {
+        if (memos[0]["id"] > memos[1]["id"]) {
+          swap(0, 1, memos);
+        }
+      }
+      //memo内の要素を順番に表に出力する
+      memos.forEach(function (keyAndMemo) {
+        console.log(keyAndMemo);
+        const html =
+          "<tr><td>" +
+          keyAndMemo.id +
+          "</td><td>" +
+          keyAndMemo.memo.title +
+          "</td><td>" +
+          keyAndMemo.memo.contents +
+          "</td></tr>";
+        $("#list").append(html);
+      });
+      // const html =
+      //     "<tr><td>" +
+      //     memo.title +
+      //     "</td><td>" +
+      //     memo.contents +
+      //     "</td></tr>";
+      //   $("#list").append(html);
+      // //一覧表示
+      // if ($.isPlainObject(memo)) {
+      //   //連想配列かどうかを判別(keyが"id"のものを取り除く)
+      //   const html =
+      //     "<tr><td>" +
+      //     memo.title +
+      //     "</td><td>" +
+      //     memo.contents +
+      //     "</td></tr>";
+      //   $("#list").append(html);
+      // }
 
       //edit
-      $("#edit").on("click", function () {
-        const key = $("#key").val();
-        const memo = $("#memo").val();
-        for (let i = 0; i < localStorage.length; i++) {
-          if (key == localStorage.key(i)) {
-            localStorage.setItem(key, memo);
-          }
-        }
-        //保存したメモを一度空に
-        $("#list").empty(); //指定したIDの場所を空っぽに
-        //保存データ取得表示
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          const memo = localStorage.getItem(key);
-          //一覧表示
-          const html = "<tr><td>" + key + "</td><td>" + memo + "</td></tr>";
-          $("#list").append(html);
-        }
-      });
+      // $("#edit").on("click", function () {
+      //   const key = $("#key").val();
+      //   const memo = $("#memo").val();
+      //   for (let i = 0; i < localStorage.length; i++) {
+      //     if (key == localStorage.key(i)) {
+      //       localStorage.setItem(key, memo);
+      //     }
+      //   }
+      //   //保存したメモを一度空に
+      //   $("#list").empty(); //指定したIDの場所を空っぽに
+      //   //保存データ取得表示
+      //   for (let i = 0; i < localStorage.length; i++) {
+      //     const key = localStorage.key(i);
+      //     const memo = localStorage.getItem(key);
+      //     //一覧表示
+      //     const html = "<tr><td>" + key + "</td><td>" + memo + "</td></tr>";
+      //     $("#list").append(html);
+      //   }
+      // });
 
-      //delete
-      $("#delete").on("click", function () {
-        const key = $("#key").val();
-        for (let i = 0; i < localStorage.length; i++) {
-          if (key == localStorage.key(i)) {
-            localStorage.removeItem(key);
-          }
-        }
-        //保存したメモを一度空に
-        $("#list").empty(); //指定したIDの場所を空っぽに
-        //保存データ取得表示
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          const memo = localStorage.getItem(key);
-          //一覧表示
-          const html = "<tr><td>" + key + "</td><td>" + memo + "</td></tr>";
-          $("#list").append(html);
-        }
-      });
+      // //delete
+      // $("#delete").on("click", function () {
+      //   const key = $("#key").val();
+      //   for (let i = 0; i < localStorage.length; i++) {
+      //     if (key == localStorage.key(i)) {
+      //       localStorage.removeItem(key);
+      //     }
+      //   }
+      //   //保存したメモを一度空に
+      //   $("#list").empty(); //指定したIDの場所を空っぽに
+      //   //保存データ取得表示
+      //   for (let i = 0; i < localStorage.length; i++) {
+      //     const key = localStorage.key(i);
+      //     const memo = localStorage.getItem(key);
+      //     //一覧表示
+      //     const html = "<tr><td>" + key + "</td><td>" + memo + "</td></tr>";
+      //     $("#list").append(html);
+      //   }
+      // });
 
-      var a = [3,7,2,4,6,1,9,8,5];
-      var b = [{id:1, memo:"aaa"}, {id:2, memo:"bbb"}, {id:3, memo:"ccc"}]
-      quickSort(0, a.length-1, a);
-      console.log(a);
-      console.log(b[0]["memo"]);
+      // 自作関数デバッグゾーン 開始
+      // var a = [3, 7, 2, 4, 6, 1, 9, 8, 5];
+      // var b = [
+      //   { id: 1, memo: "aaa" },
+      //   { id: 3, memo: "ccc" },
+      //   { id: 2, memo: "bbb" },
+      //   { id: 5, memo: "eee" },
+      //   { id: 4, memo: "ddd" },
+      // ];
+      // quickSort(0, a.length - 1, a);
+      // console.log(a);
+      // console.log(b[1]["id"]);
+      // quickSortArrayIncludedHash(0, b.length - 1, b);
+      // console.log(b);
+      // 自作関数デバッグゾーン 終了
     </script>
     <footer><small>G's</small></footer>
   </body>

@@ -1,5 +1,5 @@
 // 連想配列(hash)向けのクイックソート
-function quickSortForArrayIncludedHash(start, end, array) {
+function quickSortArrayIncludedHash(start, end, array) {
     if (end - start < 2) {
       // 1. 走査する配列長が0か１の場合戻る。
       return;
@@ -9,6 +9,7 @@ function quickSortForArrayIncludedHash(start, end, array) {
     // 2. 走査する範囲の中央の要素をピボットとして選ぶ。
     let pivot = Math.floor((start + end) / 2);
     let pivot_height = array[pivot]["id"];
+    console.log(pivot_height); //debug
     // 走査範囲の左と右端を渡す
     let left = start;
     let right = end;
@@ -31,8 +32,8 @@ function quickSortForArrayIncludedHash(start, end, array) {
     }
   
     // 4. 左右２つに配列を分割してこの関数を再帰的に繰り返す。
-    quickSort(start, left - 1, array);
-    quickSort(right, end, array);
+    quickSortArrayIncludedHash(start, left - 1, array);
+    quickSortArrayIncludedHash(right, end, array);
   
     return true;
   }
